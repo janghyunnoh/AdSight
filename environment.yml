@@ -1,0 +1,9 @@
+name: adsight
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - tmux>=3.5,<4
+  - pip:
+      - -r requirements-lock.txt

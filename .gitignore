@@ -1,0 +1,33 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Separate upstream checkout and machine-specific files
+/lark-openapi-mcp/
+/.vscode/
+/ADSIGHT_HANDOFF.md
+/TMUX_RUN.md
+/docs/local/
+/AdSight Icon.png
+
+# Local runtime data, credentials and logs
+.conda/
+.tools/
+node_modules/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+.aws/
+.pytest_cache/
+.coverage
+
+# Keep only the project introduction among Markdown documents
+*.md
+!README.md

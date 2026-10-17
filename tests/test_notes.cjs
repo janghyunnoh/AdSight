@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const N=require('../app/static/notes.js');
+const state=new Map(); const storage={getItem:key=>state.get(key),setItem:(key,value)=>state.set(key,value)};
+const notes=[{id:'1',text:'광고비와 전환수를 비교하고 싶어요.',createdAt:'2026-10-18T00:00:00Z',done:false,context:'대시보드 / 테스트 문서'}];
+assert.deepEqual(N.read(storage),[]);
+assert.equal(N.write(storage,notes),true);assert.deepEqual(N.read(storage),notes);
+notes[0].text='수정된 요구사항';notes[0].done=true;N.write(storage,notes);
+assert.equal(N.read(storage)[0].done,true);assert.equal(N.read(storage)[0].text,'수정된 요구사항');
+assert.ok(N.exportText(notes).includes('[완료]'));assert.ok(N.exportText(notes).includes('수정된 요구사항'));
+assert.equal(N.clean([notes[0],notes[0],{id:'x',text:'',createdAt:'invalid'}]).length,1);
+assert.deepEqual(N.read(null),[]);assert.equal(N.write(null,notes),false);
+state.set(N.KEY,'broken');assert.deepEqual(N.read(storage),[]);
+N.write(storage,[]);assert.deepEqual(N.read(storage),[]);
+const html='<img src=x onerror=alert(1)>';
+assert.equal(N.clean([{...notes[0],text:html}])[0].text,html);
+console.log('PASS: note persistence, editing/completion, export, duplicate/corrupt data, unavailable storage and deletion');
