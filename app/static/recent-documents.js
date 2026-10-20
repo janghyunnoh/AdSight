@@ -34,7 +34,14 @@
     try { storage.setItem(KEY, JSON.stringify(clean(entries))); return true; } catch { return false; }
   }
   function clear(storage) { try { storage.removeItem(KEY); return true; } catch { return false; } }
-  const api = {read, remember, write, clear, normalizeSource, KEY};
+  // Test phase: do not restore previous AI interpretations or column settings.
+  function resetTestHistory(storage) {
+    try {
+      const keys=Array.from({length:storage.length},(_,i)=>storage.key(i));
+      for(const key of keys)if(['adsight.column-settings.v1:','adsight.interpretation.v1:','adsight.column-review.v1:'].some(prefix=>key?.startsWith(prefix)))storage.removeItem(key);
+    }catch{}
+  }
+  const api = {resetTestHistory, read, remember, write, clear, normalizeSource, KEY};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.AdSightRecent = api;
 })(globalThis);

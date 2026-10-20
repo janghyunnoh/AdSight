@@ -20,3 +20,16 @@ state.set(R.KEY, '[{"source":"javascript:alert(1)","title":"bad"}]'); assert.dee
 assert.deepEqual(R.read(null), []); assert.equal(R.write(null, entries), false);
 R.write(storage, entries); R.clear(storage); assert.deepEqual(R.read(storage), []);
 console.log('PASS: persistence, deduplication, updated names, limit, URL normalization, invalid storage, clearing');
+Object.defineProperty(storage,'length',{get:()=>state.size});storage.key=i=>[...state.keys()][i];
+R.write(storage,[{source:'SpreadsheetToken1000',title:'campaign_1000'},{source:'SpreadsheetTokenTest',title:'test_data'},{source:'SpreadsheetTokenOther',title:'other'}]);
+const fixtureKey=(prefix,title)=>prefix+JSON.stringify(['source',title,'sheet',['A']]);
+for(const title of ['campaign_1000','test_data','other'])for(const prefix of ['adsight.column-settings.v1:','adsight.interpretation.v1:','adsight.column-review.v1:'])state.set(fixtureKey(prefix,title),'saved');
+R.resetTestHistory(storage);
+assert.equal(R.read(storage).length,3);
+assert.equal(state.has(fixtureKey('adsight.interpretation.v1:','test_data')),false);
+assert.equal(state.has(fixtureKey('adsight.interpretation.v1:','campaign_1000')),false);
+assert.equal(state.has(fixtureKey('adsight.column-settings.v1:','campaign_1000')),false);
+assert.equal(state.has(fixtureKey('adsight.interpretation.v1:','other')),false);
+R.write(storage,R.remember(R.read(storage),'NewSpreadsheetToken','new document'));
+R.resetTestHistory(storage);assert.equal(R.read(storage)[0].title,'new document');
+console.log('PASS: one-time test history cleanup clears all document history and interpretation');

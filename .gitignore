@@ -15,6 +15,7 @@ __pycache__/
 /AdSight Icon.png
 
 # Local runtime data, credentials and logs
+/data/
 .conda/
 .tools/
 node_modules/

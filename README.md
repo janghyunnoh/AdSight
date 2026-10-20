@@ -3,52 +3,78 @@
 </p>
 
 <h1 align="center">AdSight</h1>
-<p align="center"><strong>AI Assistant for Advertising Data Analysis</strong></p>
-<p align="center">From advertising spreadsheets to clearer performance insights.</p>
+<p align="center"><strong>AI Assistant for Advertising Analytics</strong></p>
+<p align="center">광고 스프레드시트를 연결하고, 지표를 비교하고, 변화의 근거를 확인하는 데이터 워크스페이스</p>
 
-## Overview
+## 소개
 
-AdSight is a web-based assistant for exploring advertising data and understanding campaign performance. It brings spreadsheet data into an interactive workspace for visualization and comparison, with a roadmap toward Lark OpenAPI MCP integration and LLM-based insight generation.
+AdSight는 Lark 스프레드시트를 읽어 대시보드와 특이사항 분석을 제공하는 웹 애플리케이션입니다. NVIDIA API로 컬럼의 한국어 이름·의미·역할을 추천받고, 사용자가 확인한 설정을 분석에 적용합니다. AI 없이 직접 설정할 수도 있습니다.
 
-**Current stage: a working data exploration MVP.** Spreadsheet retrieval and dashboard visualization use the Lark REST API. MCP-powered agent workflows, automated anomaly detection, and LLM-generated insights are planned and are not yet implemented.
+현재는 **데이터 탐색과 기간 비교를 위한 개발 MVP**입니다. 데이터 조회는 Lark REST API를 사용하며, AI 해석은 NVIDIA API로 제공합니다. AI 어시스턴트의 대화 기능과 MCP 기반 에이전트는 구현 예정입니다.
 
-## Features
+## 주요 기능
 
-- **Connect your data** — Load a Lark spreadsheet using its URL or token, including spreadsheets inside Lark Wiki.
-- **Explore your sheets** — Switch worksheets, sort columns, and refresh data from the source. Columns and rows are handled dynamically.
-- **Build a focused dashboard** — Choose summary metrics and aggregation methods, then filter by date and comparison target.
-- **Compare performance** — Compare companies or campaigns over time, inspect values on hover, and view related metrics such as spend, clicks, and conversions together.
-- **Capture feedback** — Record feature requests and improvements in development notes, mark items complete, and export them as text.
+### 데이터 연결과 설정
 
-## How It Works
+1. **문서 불러오기** — Lark Sheets 또는 Wiki 링크·토큰으로 문서를 연결합니다.
+2. **데이터 확인** — 시트를 선택하고 원본 값을 미리 봅니다. 필요한 경우 데이터 설명을 입력해 AI 해석에 업무 맥락을 전달합니다.
+3. **컬럼 설정** — 표시 이름, 역할, 의미와 추천 근거를 확인하고 수정합니다. AI가 판단을 유보한 항목은 확인해야 적용할 수 있습니다.
+
+각 단계는 접거나 다시 펼칠 수 있습니다. 원본 스프레드시트는 읽기 전용으로 접근합니다.
+
+승인한 설정은 문서의 실제 스프레드시트 ID와 시트 ID를 기준으로 서버에 저장합니다. 같은 문서를 다시 연결하면 최신 데이터를 읽고, 기존 설정을 불러올지 묻습니다. 행이 추가되어도 호환되는 설정을 재사용하며, 컬럼 구조·단위·형식이 달라지면 검토가 필요합니다. 고유한 컬럼명은 순서가 바뀌어도 대응시킵니다.
+
+### 대시보드
+
+- 대상·기간·계산 방식을 선택해 카드와 그래프에 함께 적용합니다.
+- 핵심 지표 카드를 누르면 해당 지표의 날짜별 추이와 대상별 비교를 확인합니다. 처음에는 첫 번째 지표를 표시합니다.
+- 지표 비교에서는 여러 지표의 추이를 한 그래프에서 보고, 대상별 값을 정렬 가능한 행렬로 비교합니다.
+- 단위가 다른 지표는 첫 관측값 대비 변화율로 비교합니다. 실제 값 비교는 단위가 같을 때 가능하며, 기준값이 0이면 변화율을 계산하지 않습니다.
+- 핵심 카드 구성·선택 지표·비교 지표 목록은 승인한 문서 설정과 함께 저장합니다. 비교 지표는 처음 네 개로 시작하고 이후 핵심 카드와 독립적으로 관리합니다.
+
+### 특이사항
+
+- 대시보드와 **독립된 조회 조건**으로 비교 기준·대상·계산 방식·두 기간·지표를 선택합니다.
+- 기본 기간은 문서의 마지막 데이터 날짜를 기준으로 최근 7일과 직전 7일입니다. 빠른 선택 또는 달력으로 두 기간을 각각 지정할 수 있습니다.
+- 증가·감소 기준은 각각 기본 5%이며 직접 입력합니다. 각 기간에 유효한 숫자 값이 세 개 이상 있어야 지표의 증감률을 계산합니다.
+- 제목에서 **평균 증가·합계 감소**처럼 실제 계산 기준을 표시합니다. 증감률은 `(현재 값 - 이전 값) / |이전 값| × 100`입니다. 이전 값이 0이면 증감률을 계산하지 않습니다.
+- 누락 날짜·숫자가 아닌 값·표본 부족·동일 행 등 데이터 확인 항목도 함께 표시합니다. 이는 검토 기준이며 통계적 유의성이나 업무상 원인을 확정하지 않습니다.
+- 결과 카드는 두 열로 배치됩니다. **분석 펼치기**를 누르면 왼쪽에 요약과 AI 해석, 오른쪽에 대상별 시각화가 나타납니다. 대상 이름을 누르면 그 대상의 일별 추이로 전환합니다.
+- 처음 펼칠 때 NVIDIA 해석을 요청하고, 같은 조건에서는 현재 페이지에 저장된 결과를 재사용합니다. 긴 해석은 영역 안에서 스크롤합니다. AI를 사용할 수 없어도 계산 결과와 시각화는 확인할 수 있습니다.
+
+현재 데이터에 대한 수동 점검이며, 예약 실행·상시 모니터링·알림은 구현하지 않았습니다.
+
+### 피드백과 AI 어시스턴트
+
+- 피드백을 등록·수정·삭제하고 해결 여부를 체크할 수 있습니다. 피드백은 서버에 저장되어 같은 서버에 접속한 사용자들이 공유합니다.
+- AI 어시스턴트 패널은 **구현 예정** 상태를 표시합니다. 현재 질문 전송 기능은 제공하지 않습니다.
+
+## 구성
 
 ```text
 Lark Sheets / Wiki
-       |
-       v
-FastAPI backend -- Lark REST API
-       |
-       v
-Web workspace
-  Data connection -> Interactive dashboard -> Metric comparisons
-
-Planned: Lark OpenAPI MCP -> AI agent -> LLM-generated insights
+       │ Lark REST API · 읽기 전용
+       ▼
+FastAPI ────────── SQLite
+       │          승인 설정 · 대시보드 구성 · 피드백
+       ├───────── NVIDIA API
+       │          컬럼 해석 · 특이사항 해석
+       ▼
+HTML / CSS / JavaScript
+데이터 연결 → 대시보드 / 특이사항 / 피드백
 ```
 
-The web app can be opened from Lark by registering a hosted URL as its Web App homepage. Lark provides the entry point; the application backend runs on your own server or hosting provider.
-
-## Tech Stack
-
-| Layer | Technology |
+| 구성 | 기술 |
 | --- | --- |
-| Backend | Python 3.11, FastAPI, HTTPX |
-| Frontend | HTML, CSS, JavaScript |
-| Data integration | Lark Sheets and Wiki REST APIs |
-| Planned AI integration | Lark OpenAPI MCP, LLM-based agent workflows |
+| 서버 | Python 3.11, FastAPI, HTTPX |
+| 화면 | HTML, CSS, JavaScript, SVG 그래프 |
+| 데이터 조회 | Lark Sheets / Wiki REST API |
+| AI | NVIDIA API · JSON Schema 기반 응답 |
+| 저장소 | SQLite, 최근 연결 문서는 브라우저 저장소 |
 
-## Getting Started
+## 실행 방법
 
-### 1. Set up the environment
+### 1. 환경 준비
 
 ```sh
 git clone https://github.com/janghyunnoh/AdSight.git
@@ -58,41 +84,84 @@ conda activate adsight
 cp .env.example .env
 ```
 
-### 2. Configure Lark access
+Node.js는 JavaScript 테스트를 실행할 때 필요합니다. 웹 서버 실행에는 별도의 프런트엔드 빌드가 필요하지 않습니다.
 
-Set the following values in your local `.env` file:
+### 2. 환경 변수
+
+로컬 `.env`에 입력합니다. 실제 키는 저장소에 커밋하지 않습니다.
 
 ```dotenv
 LARK_APP_ID=your_app_id
 LARK_APP_SECRET=your_app_secret
 LARK_DOMAIN=https://open.larksuite.com
-LARK_SPREADSHEET_TOKEN=your_default_spreadsheet_token
+
+# 선택: 기본 문서 설정. 기본값은 자동 불러오기 비활성화입니다.
+LARK_SPREADSHEET_TOKEN=
+ADSIGHT_AUTOLOAD_DEFAULT=false
+
+# 선택: AI를 사용할 때만 설정합니다.
+NVIDIA_API_KEY=your_nvidia_api_key
+NVIDIA_MODEL=nvidia/nemotron-3.5-lightning-30b-a3b
+
+# 선택: 승인 설정·피드백 등을 저장할 영구 경로
+# ADSIGHT_NOTES_DB=/persistent/notes.sqlite3
 ```
 
-The app needs Sheets read permissions and access to the document you want to load. Wiki links also require Wiki node read access. Publish permission changes in the Lark Developer Console before testing them.
+Lark 앱에는 대상 문서 접근 권한과 Sheets 읽기 권한이 필요합니다. Wiki 링크는 Wiki 노드 읽기 권한도 필요합니다. 권한을 변경했다면 Lark Developer Console에서 앱 버전을 게시합니다.
 
-The official [Lark OpenAPI MCP](https://github.com/larksuite/lark-openapi-mcp) checkout is maintained separately and is not required to run the current REST-based MVP.
+별도의 `lark-openapi-mcp` 체크아웃은 현재 웹 앱을 실행하는 데 필수가 아닙니다. Ollama는 현재 지원하지 않습니다.
 
-### 3. Start the app
+### 3. 서버 실행
 
 ```sh
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --no-access-log
 ```
 
-Open **http://127.0.0.1:8000**, enter a spreadsheet URL or token, and select a worksheet.
+**http://127.0.0.1:8000**에서 문서를 연결합니다. 환경 변수나 백엔드 코드를 변경했다면 서버를 재시작합니다.
 
-## Roadmap
+Lark 앱 내부에서 열려면 배포한 웹 주소를 Web App 홈페이지로 등록합니다. 웹 서버는 별도로 실행되어야 합니다.
 
-- [x] Spreadsheet connection, data preview, and refresh
-- [x] Interactive dashboards and multi-target comparisons
-- [x] Development notes for feature requests and improvements
-- [ ] Automated detection of unusual performance changes
-- [ ] Lark OpenAPI MCP integration for agent tool access
-- [ ] Natural-language questions and LLM-generated performance insights
-- [ ] User authentication and access control for hosted use
+## AI 동작과 데이터 처리
 
-## Configuration & Data
+- **컬럼 해석**: 컬럼명, 컬럼별 최대 10개의 무작위 고유 샘플 값, 숫자·날짜·단위 형식 정보와 사용자가 입력한 설명을 보냅니다. 값이 10개보다 적으면 가능한 값을 보냅니다. 전체 원본 행을 보내지 않습니다.
+- **특이사항 해석**: 계산된 두 기간의 값·증감률·표본 수·데이터 확인 항목과 승인된 설명을 보냅니다. 보조 정보는 기간별 최대 30개 일별 집계, 절대 변화가 큰 대상 최대 5개, 관련 지표 최대 3개로 제한합니다. 긴 기간의 일별 집계는 양 끝과 극값을 포함해 추립니다.
+- **한국어 출력**: 사용자에게 보이는 설명을 한국어로 요청하고, 한국어가 없는 설명 문장은 적용하지 않습니다. 기업명·원본 컬럼명·약어는 원문을 유지할 수 있습니다.
+- **실패 처리**: 한도 초과·타임아웃·인증 오류·잘못된 응답은 화면에 안내하며 계산 결과와 승인 설정을 유지합니다. 자동 재시도하거나 다른 제공자로 전환하지 않습니다.
+- **검토**: AI의 의미·역할 추천과 원인 해석은 추정입니다. 대상별 평균 변화는 전체 평균에 대한 기여도를 의미하지 않습니다.
 
-Credentials stay on the backend. Real `.env` files, local databases, runtime files, and the separate MCP checkout are excluded from this repository.
+기본 SQLite 파일은 `data/notes.sqlite3`입니다. 배포 시 데이터 유지를 원하면 영구 볼륨을 사용하고 백업합니다. 최근 연결 문서는 브라우저별로 저장되므로 Lark 내장 브라우저와 일반 브라우저에서 목록이 다를 수 있습니다.
 
-This is a development MVP. Restrict access or add authentication before hosting sensitive advertising data. Lark app availability controls who can discover the app in Lark; the hosted application and API still need their own access checks.
+인증·사용자별 데이터 격리는 아직 구현되지 않았습니다. Lark 앱의 공개 범위와 웹 서버의 접근 제어는 별개입니다. 민감한 문서를 연결하는 배포 환경에서는 웹 서버 접근을 제한해야 합니다.
+
+## 테스트
+
+외부 API를 호출하지 않는 회귀 테스트:
+
+```sh
+python -m unittest discover -s tests -q
+```
+
+```sh
+for test_file in tests/test_*.cjs; do
+  node "$test_file" || exit 1
+done
+```
+
+실제 NVIDIA API 연결 확인은 별도로 실행합니다. 이 명령은 API 사용량을 소비합니다.
+
+```sh
+python -m scripts.verify_ai nvidia
+```
+
+## 구현 상태
+
+- [x] Lark 문서 연결, 시트 미리보기, 최신 데이터 조회
+- [x] NVIDIA 기반 컬럼 해석·한국어 이름 추천과 사용자 검토
+- [x] 승인 설정 및 대시보드 구성 저장·복원
+- [x] 핵심 지표, 기간별·대상별 비교 시각화
+- [x] 독립된 특이사항 조회 조건과 규칙 기반 변화 감지
+- [x] 특이사항별 시각화와 NVIDIA 해석
+- [x] 공유 피드백과 해결 상태 관리
+- [ ] AI 어시스턴트 대화 기능
+- [ ] Lark OpenAPI MCP 기반 에이전트
+- [ ] 사용자 인증과 접근 권한 분리

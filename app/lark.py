@@ -76,6 +76,7 @@ class LarkClient:
         self.app_id = config.get("LARK_APP_ID")
         self.secret = config.get("LARK_APP_SECRET")
         self.spreadsheet = config.get("LARK_SPREADSHEET_TOKEN")
+        self.autoload_default = config.get("ADSIGHT_AUTOLOAD_DEFAULT", "").lower() in ("1", "true", "yes")
         domain = config.get("LARK_DOMAIN", "https://open.larksuite.com").rstrip("/")
         if domain not in ("https://open.larksuite.com", "https://open.feishu.cn"):
             raise LarkError("LARK_DOMAIN은 공식 Lark 또는 Feishu HTTPS 주소여야 합니다.")

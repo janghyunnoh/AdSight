@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');const D=require('../app/static/data-utils.js');
+for(const [text,value] of [['$1,200',1200],['₩10,000',10000],['1,200원',1200],['USD 1,200.50',1200.5],['EUR 50',50],['€12',12],['£50',50],['JPY 1,000',1000],['(₩1,200)',-1200],['-$1,200',-1200],['USD -50',-50],['3.5%',.035],['-10%',-.1],['100%',1],['0%',0],['$0',0],['1,200 USD',1200]]) assert.equal(D.number(text),value,text);
+for(const text of ['12,34','2026-10-01','30 days','10만원','$100 EUR','10% USD','(-10)','--10','USD 10%','12,5 €','1 000','12 USD notes'])assert.equal(D.number(text),null,text);
+assert.deepEqual(D.parsedNumber('₩1,200'),{value:1200,unit:'KRW'});
+assert.equal(D.metricType([['$10'],['USD 20'],[30]],0,'Cost').eligible,true);
+assert.equal(D.metricType([['$10'],['₩20']],0,'Cost').eligible,false);
+assert.equal(D.metricType([['$10'],['₩20']],0,'Cost').conflict,true);
+assert.equal(D.metricType([['10%'],[.2]],0,'Rate').unit,'%');
+assert.equal(D.metricType([[100],[200]],0,'Campaign_ID').eligible,true);
+assert.equal(D.metricType([[100],[200]],0,'CampaignId').eligible,true);
+assert.equal(D.metricType([[100],[200]],0,'Clicks').eligible,true);
+assert.equal(D.aggregate([['A','$1,000'],['A','USD 500'],['A',null]],0,1,'sum')[0].value,1500);
+assert.equal(D.aggregate([['A','10%'],['A',.2]],0,1,'mean')[0].value,.15000000000000002);
+const source=[['$100'],['$20']];assert.deepEqual(D.sortRows(source.map(values=>({values})),0,1).map(row=>row.values[0]),['$20','$100']);assert.deepEqual(source,[['$100'],['$20']]);
+console.log('PASS: currency/percentage parsing, signs, units, invalid values, mixed currency exclusion, identifier exclusion, aggregation and original values');

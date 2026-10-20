@@ -1,5 +1,6 @@
 import unittest
 import os
+import tempfile
 from unittest.mock import patch
 
 import httpx
@@ -11,7 +12,10 @@ from app.main import app
 
 class TableTests(unittest.TestCase):
     def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
         config = patch.dict(os.environ, {
+            "ADSIGHT_NOTES_DB": directory.name + "/notes.sqlite3",
             "LARK_APP_ID": "test-app-id",
             "LARK_APP_SECRET": "test-secret",
             "LARK_SPREADSHEET_TOKEN": "testSpreadsheet123",
@@ -19,6 +23,16 @@ class TableTests(unittest.TestCase):
         })
         config.start()
         self.addCleanup(config.stop)
+
+    def test_startup_settings(self):
+        with patch.dict(os.environ, {"ADSIGHT_AUTOLOAD_DEFAULT": "true"}):
+            with TestClient(app) as client:
+                response = client.get("/api/startup")
+                self.assertEqual(response.json(), {"autoload": True})
+                self.assertNotIn("testSpreadsheet123", response.text)
+        with patch.dict(os.environ, {"ADSIGHT_AUTOLOAD_DEFAULT": "false"}):
+            with TestClient(app) as client:
+                self.assertEqual(client.get("/api/startup").json(), {"autoload": False})
 
     def test_source_validation(self):
         token = "exampleSpreadsheet123"

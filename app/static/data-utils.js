@@ -1,12 +1,41 @@
 /* Pure data helpers shared by the UI and Node checks. */
 (function (root) {
-  function number(value) {
-    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  function parsedNumber(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? {value, unit: ''} : null;
     if (typeof value !== 'string') return null;
-    const text = value.trim();
-    if (!/^[+-]?(?:\d+(?:\.\d*)?|\d{1,3}(?:,\d{3})+(?:\.\d*)?|\.\d+)$/.test(text)) return null;
-    const result = Number(text.replaceAll(',', ''));
-    return Number.isFinite(result) ? result : null;
+    let source = value.trim();
+    const negative = source.startsWith('(') && source.endsWith(')');
+    if (negative) source = source.slice(1, -1).trim();
+    const currencies = {'$':'USD', '₩':'KRW', '￦':'KRW', '€':'EUR', '£':'GBP', '¥':'JPY', '원':'KRW'};
+    const unitName = text => currencies[text] || text.toUpperCase();
+    const marker = /^(USD|KRW|EUR|GBP|JPY|CNY|[$₩￦€£¥])\s*/i;
+    const suffix = /\s*(USD|KRW|EUR|GBP|JPY|CNY|원|[$₩￦€£¥])$/i;
+    let sign = '';
+    if (/^[+-]/.test(source)) {sign = source[0]; source = source.slice(1).trim();}
+    const prefix = source.match(marker); let unit = '';
+    if (prefix) {unit = unitName(prefix[1]); source = source.slice(prefix[0].length).trim();}
+    const tail = source.match(suffix);
+    if (tail) {
+      const next = unitName(tail[1]); if (unit && unit !== next) return null;
+      unit = next; source = source.slice(0, -tail[0].length).trim();
+    }
+    if (source.endsWith('%')) {if (unit) return null; unit = '%'; source = source.slice(0,-1).trim();}
+    if (negative && (sign || /^[+-]/.test(source))) return null;
+    if (sign && /^[+-]/.test(source)) return null;
+    source = sign + source;
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\d{1,3}(?:,\d{3})+(?:\.\d*)?|\.\d+)$/.test(source)) return null;
+    let result = Number(source.replaceAll(',', ''));
+    if (negative) result = -result;
+    if (unit === '%') result /= 100;
+    return Number.isFinite(result) ? {value: result, unit} : null;
+  }
+  function number(value) {return parsedNumber(value)?.value ?? null;}
+  function metricType(rows, index, name = '') {
+    const parsed = rows.map(row => parsedNumber(row[index])).filter(Boolean);
+    const units = [...new Set(parsed.map(item => item.unit).filter(Boolean))];
+    const identifier = false; // Identifier roles are confirmed in column settings.
+    const conflict = units.length > 1;
+    return {eligible: !!parsed.length && !identifier && !conflict, unit: conflict ? '' : units[0] || '', conflict, identifier};
   }
   function text(value) { return value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value); }
   function blank(value) { return value == null || value === ''; }
@@ -59,8 +88,7 @@
     });
     const dateColumn = info.find(item => item.dates)?.index ?? -1;
     const categories = info.filter(item => !item.numeric && !item.dates && item.distinct > 0);
-    const preferred = categories.find(item => /^(회사|회사명|광고주|광고주명|company|advertiser)$/i.test(item.name.trim()));
-    const category = preferred || categories.find(item => item.distinct > 1 && item.distinct < rows.length) || categories[0];
+    const category = categories.find(item => item.distinct > 1 && item.distinct < rows.length) || categories[0];
     return {info, dateColumn, groupColumn: category?.index ?? 0, numeric: info.filter(item => item.numeric).map(item => item.index)};
   }
   function compareGroups(rows, group, settings) {
@@ -109,7 +137,17 @@
     if (sorted.length <= 4) return sorted;
     return Array.from({length: 4}, (_, index) => sorted[Math.round(index * (sorted.length - 1) / 3)]);
   }
-  const api = {number, text, date, profile, sortRows, aggregate, compareGroups, timeSeries, niceScale, displayNumber, dateTicks};
+  function columnSamples(rows,index,limit=10,random=Math.random) {
+    const unique=[...new Set(rows.map(row=>text(row[index]).trim().slice(0,160)).filter(Boolean))];
+    // Partial Fisher–Yates: uniform sampling without replacement, independent of row order.
+    const count=Math.min(limit,unique.length);
+    for(let i=0;i<count;i++){
+      const j=i+Math.floor(random()*(unique.length-i));
+      [unique[i],unique[j]]=[unique[j],unique[i]];
+    }
+    return unique.slice(0,count);
+  }
+  const api = {columnSamples, number, parsedNumber, metricType, text, date, profile, sortRows, aggregate, compareGroups, timeSeries, niceScale, displayNumber, dateTicks};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.AdSightData = api;
 })(globalThis);
