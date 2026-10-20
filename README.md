@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">AdSight</h1>
-<p align="center"><strong>AI Assistant for Advertising Analytics</strong></p>
+<p align="center"><strong>AI Assistant for Advertising Data Analytics</strong></p>
 <p align="center">Connect advertising data, compare performance, and understand what changed.</p>
 
 ## Overview
