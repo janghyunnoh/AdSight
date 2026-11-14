@@ -12,13 +12,39 @@ AdSight is a web-based advertising analytics workspace developed around marketin
 
 The current MVP uses Lark REST APIs for read-only data access and NVIDIA API for column interpretation and finding explanations.
 
-## Features
+## Features & Workflow
 
-- **Data connection** — Load Lark Sheets and Wiki documents, select worksheets, and preview source data.
-- **AI-assisted setup** — Get suggested Korean column names, meanings, and analysis roles. Review and edit recommendations or configure columns manually, then reuse approved settings when reconnecting.
-- **Interactive dashboards** — Explore key metrics, compare trends and targets, and save dashboard preferences.
-- **Change analysis** — Select periods, targets, metrics, and increase/decrease thresholds independently of the dashboard. Inspect rule-based findings with target-level charts, daily trends, and AI explanations.
-- **Shared feedback** — Record improvements and track their resolution.
+**Connect & configure → Explore a metric → Compare metrics → Inspect changes with AI**
+
+The screenshots below show the actual application with the connected marketing-campaign example dataset. Each image uses a consistent **1920 × 1080 (16:9)** frame; document tokens and credentials are excluded.
+
+### 1. Connect data and review column settings
+
+Load a Lark spreadsheet, preview its worksheets, and review the proposed column names, meanings, roles, and currencies before applying them. Approved settings can be reused when reconnecting.
+
+![Data connection steps and reviewed AI-assisted column settings](docs/images/data-setup.jpg)
+
+### 2. Explore a metric in the dashboard
+
+Choose a period, grouping, and targets, then select a metric card to see its trend and target-level values. Clicking a target bar highlights its corresponding trend without changing the query filters.
+
+![Dashboard with metric cards, weekly acquisition-cost trends, and company-level comparisons](docs/images/dashboard.jpg)
+
+### 3. Compare multiple metrics across targets
+
+Select the metrics to compare in one table. Column headings support sorting; values, bars, and ranks are interpreted **within the same metric**, rather than across different units.
+
+![Company comparison table with acquisition cost, ROI, clicks, and per-metric ranks](docs/images/metric-comparison.jpg)
+
+### 4. Inspect changes and request an AI explanation
+
+Set analysis and reference periods plus increase/decrease thresholds. Rule-based checks compare each target's metric averages and flag changes or insufficient data. Select a result to inspect the chart, then request an AI explanation of the evidence, limitations, and follow-up checks.
+
+![Period-change cards, a selected target's comparison chart, and the AI explanation request area](docs/images/anomaly-analysis.jpg)
+
+The screenshot shows the state before requesting an explanation. AI-generated interpretations require review; detected changes do not establish statistical significance or causation.
+
+Additional tools include original-currency/KRW display using daily reference exchange rates, visualization image copy/export, and shared feedback tracking.
 
 ## Tech Stack
 
@@ -69,6 +95,8 @@ Open **http://127.0.0.1:8000** and connect a document. To access the workspace i
 ## Data and AI
 
 Source spreadsheets remain read-only. Approved settings, dashboard preferences, and feedback are stored in `data/notes.sqlite3`; use persistent storage when deploying.
+
+Successful document connections are appended to a private `connection-history.txt` beside the database. Each entry contains the connection time, submitted document URL or token, resolved document ID, and title. Set `ADSIGHT_CONNECTION_LOG` to change the path. This file contains document identifiers and is excluded from source control.
 
 AI interpretation uses column samples and optional user context. Finding explanations use computed aggregates and supporting evidence, rather than complete source rows. AI output is provided in Korean. Recommendations require review, and detected changes do not establish statistical significance or business causes. API failures preserve existing settings and computed results.
 
