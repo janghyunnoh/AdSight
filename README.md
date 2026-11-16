@@ -6,43 +6,45 @@
 <p align="center"><strong>AI Assistant for Advertising Data Analytics</strong></p>
 <p align="center">Connect advertising data, compare performance, and understand what changed.</p>
 
+[Open AdSight](https://adsight.companionablegranola8.chatgpt.site) · Hosted access is limited to approved accounts.
+
 ## Overview
 
 AdSight is a web-based advertising analytics workspace developed around marketing practitioners' feedback. It connects Lark spreadsheets, helps users configure their data with AI, and combines interactive dashboards with evidence-based change analysis.
 
 The current MVP uses Lark REST APIs for read-only data access and NVIDIA API for column interpretation and finding explanations.
 
-## Features & Workflow
+## Product walkthrough
 
 **Connect & configure → Explore a metric → Compare metrics → Inspect changes with AI**
 
-The screenshots below show the actual application with the connected marketing-campaign example dataset. Each image uses a consistent **1920 × 1080 (16:9)** frame; document tokens and credentials are excluded.
+The screenshots use the same example dataset. Click any preview to open the full-size image.
 
 ### 1. Connect data and review column settings
 
-Load a Lark spreadsheet, preview its worksheets, and review the proposed column names, meanings, roles, and currencies before applying them. Approved settings can be reused when reconnecting.
+Choose a Lark worksheet and review the AI-suggested column labels, roles, and currencies before applying them. Reuse approved settings when you reconnect.
 
-![Data connection steps and reviewed AI-assisted column settings](docs/images/data-setup.jpg)
+<a href="docs/images/data-setup.jpg"><img src="docs/images/data-setup.jpg" width="560" alt="Data connection steps and reviewed AI-assisted column settings"></a>
 
 ### 2. Explore a metric in the dashboard
 
 Choose a period, grouping, and targets, then select a metric card to see its trend and target-level values. Clicking a target bar highlights its corresponding trend without changing the query filters.
 
-![Dashboard with metric cards, weekly acquisition-cost trends, and company-level comparisons](docs/images/dashboard.jpg)
+<a href="docs/images/dashboard.jpg"><img src="docs/images/dashboard.jpg" width="560" alt="Dashboard with metric cards, weekly acquisition-cost trends, and company-level comparisons"></a>
 
 ### 3. Compare multiple metrics across targets
 
 Select the metrics to compare in one table. Column headings support sorting; values, bars, and ranks are interpreted **within the same metric**, rather than across different units.
 
-![Company comparison table with acquisition cost, ROI, clicks, and per-metric ranks](docs/images/metric-comparison.jpg)
+<a href="docs/images/metric-comparison.jpg"><img src="docs/images/metric-comparison.jpg" width="560" alt="Company comparison table with acquisition cost, ROI, clicks, and per-metric ranks"></a>
 
 ### 4. Inspect changes and request an AI explanation
 
 Set analysis and reference periods plus increase/decrease thresholds. Rule-based checks compare each target's metric averages and flag changes or insufficient data. Select a result to inspect the chart, then request an AI explanation of the evidence, limitations, and follow-up checks.
 
-![Period-change cards, a selected target's comparison chart, and the AI explanation request area](docs/images/anomaly-analysis.jpg)
+<a href="docs/images/anomaly-analysis.jpg"><img src="docs/images/anomaly-analysis.jpg" width="560" alt="Period-change cards, a selected target's comparison chart, and the AI explanation request area"></a>
 
-The screenshot shows the state before requesting an explanation. AI-generated interpretations require review; detected changes do not establish statistical significance or causation.
+The preview shows a finding before AI explanation. Review AI suggestions against the displayed evidence.
 
 Additional tools include original-currency/KRW display using daily reference exchange rates, visualization image copy/export, and shared feedback tracking.
 
@@ -70,7 +72,7 @@ cp .env.example .env
 
 ### 2. Configure Credentials
 
-Edit `.env` with your Lark app credentials and, optionally, a NVIDIA API key for AI features:
+Edit `.env` with your Lark app credentials and, optionally, an NVIDIA API key for AI features:
 
 ```dotenv
 LARK_APP_ID=your_app_id
